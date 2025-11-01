@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xsukax Secure Authenticator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif; background: #f6f8fa; color: #24292f; line-height: 1.5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .header { background: #fff; border: 1px solid #d0d7de; border-radius: 6px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .brand { display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 2rem; font-weight: 600; color: #24292f; margin-bottom: 0.5rem; }
+        .brand i { color: #0969da; }
+        .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; }
+        .toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .btn { background: #fff; color: #24292f; border: 1px solid #d0d7de; padding: 0.75rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.95rem; font-family: inherit; }
+        .btn:hover { background: #f6f8fa; border-color: #1f883d; }
+        .btn-primary { background: #1f883d; color: #fff; border-color: #1f883d; }
+        .btn-primary:hover { background: #1a7f37; }
+        .btn-danger { background: #cf222e; color: #fff; border-color: #cf222e; }
+        .btn-danger:hover { background: #a40e26; }
+        .btn-secondary { background: #f6f8fa; color: #24292f; border-color: #d0d7de; }
+        .btn-secondary:hover { background: #f3f4f6; }
+        .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+        .account-card { background: #fff; border: 1px solid #d0d7de; border-radius: 6px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: box-shadow 0.2s; }
+        .account-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+        .account-header { border-bottom: 1px solid #d0d7de; padding-bottom: 1rem; margin-bottom: 1.25rem; }
+        .account-name { font-size: 1.25rem; font-weight: 600; color: #24292f; margin-bottom: 0.25rem; }
+        .account-issuer { color: #57606a; font-size: 0.875rem; }
+        .code-section { margin-bottom: 1.25rem; }
+        .code-display { font-size: 2.5rem; font-weight: 700; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace; letter-spacing: 0.15em; text-align: center; color: #0969da; margin: 1.25rem 0; padding: 1rem; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; cursor: pointer; user-select: all; transition: all 0.15s; }
+        .code-display:hover { background: #ddf4ff; border-color: #54aeff; }
+        .progress-wrapper { margin-bottom: 1rem; }
+        .progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.875rem; color: #57606a; }
+        .progress-container { height: 6px; background: #d0d7de; border-radius: 3px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #1f883d; transition: width 0.1s linear, background 0.3s; border-radius: 3px; }
+        .progress-bar.warning { background: #d29922; }
+        .progress-bar.danger { background: #cf222e; }
+        .account-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+        .account-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 1rem; border-top: 1px solid #d0d7de; }
+        .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; background: #ddf4ff; color: #0969da; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+        .badge i { font-size: 0.65rem; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 999; animation: fadeIn 0.2s; }
+        .modal-overlay.show { display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-content { background: #fff; border-radius: 6px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); animation: slideDown 0.2s; }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid #d0d7de; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: #24292f; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer { padding: 1.5rem; border-top: 1px solid #d0d7de; display: flex; gap: 0.75rem; justify-content: flex-end; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #24292f; font-size: 0.95rem; }
+        .form-input { width: 100%; padding: 0.625rem 0.75rem; border: 1px solid #d0d7de; border-radius: 6px; font-size: 0.95rem; font-family: inherit; transition: all 0.15s; }
+        .form-input:focus { outline: none; border-color: #0969da; box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1); }
+        .form-hint { display: block; margin-top: 0.375rem; font-size: 0.875rem; color: #57606a; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .notification { position: fixed; top: 1.5rem; right: 1.5rem; background: #fff; border: 1px solid #d0d7de; border-left: 3px solid #1f883d; border-radius: 6px; padding: 1rem 1.25rem; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); z-index: 9999; max-width: 400px; animation: slideInRight 0.3s; display: flex; align-items: center; gap: 0.75rem; }
+        .notification.error { border-left-color: #cf222e; }
+        .notification-icon { font-size: 1.25rem; }
+        .notification.success .notification-icon { color: #1f883d; }
+        .notification.error .notification-icon { color: #cf222e; }
+        .notification-text { flex: 1; color: #24292f; font-size: 0.95rem; }
+        .empty-state { background: #fff; border: 1px solid #d0d7de; border-radius: 6px; padding: 4rem 2rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .empty-state i { font-size: 3rem; color: #57606a; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state h3 { color: #24292f; margin-bottom: 0.5rem; font-size: 1.25rem; }
+        .empty-state p { color: #57606a; }
+        .qr-preview { max-width: 100%; max-height: 300px; border: 1px solid #d0d7de; border-radius: 6px; display: block; margin: 1rem 0; }
+        .camera-container { position: relative; width: 100%; max-width: 100%; background: #000; border-radius: 6px; overflow: hidden; }
+        .camera-video { width: 100%; height: auto; display: block; }
+        .camera-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 3px solid #1f883d; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5); }
+        .camera-status { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: #fff; padding: 0.75rem 1.25rem; border-radius: 20px; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; }
+        .camera-status i { animation: pulse 1.5s infinite; }
+        .camera-controls { display: flex; gap: 0.75rem; margin-top: 1rem; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(400px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 768px) { .accounts-grid { grid-template-columns: 1fr; } .code-display { font-size: 2rem; } .form-row { grid-template-columns: 1fr; } .toolbar { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="brand">
+                <i class="fas fa-shield-alt"></i>
+                <span>xsukax Secure Authenticator</span>
+            </div>
+            <p class="subtitle">Client-side TOTP/HOTP authenticator with AES-256 encrypted backup</p>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="showAddModal()">
+                <i class="fas fa-plus"></i> Add Account
+            </button>
+            <button class="btn" onclick="showCameraModal()">
+                <i class="fas fa-camera"></i> Scan with Camera
+            </button>
+            <button class="btn" onclick="showQRModal()">
+                <i class="fas fa-image"></i> Upload QR
+            </button>
+            <button class="btn" onclick="showURIModal()">
+                <i class="fas fa-link"></i> Add by URI
+            </button>
+            <button class="btn" onclick="showExportModal()">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button class="btn" onclick="showImportModal()">
+                <i class="fas fa-upload"></i> Import
+            </button>
+        </div>
+
+        <div id="accounts-container" class="accounts-grid"></div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div id="add-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'add-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Add Account</h3>
+            </div>
+            <div class="modal-body">
+                <form id="add-form" onsubmit="addAccount(event)">
+                    <div class="form-group">
+                        <label class="form-label">Account Name *</label>
+                        <input type="text" id="account-name" class="form-input" placeholder="e.g., john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Issuer (optional)</label>
+                        <input type="text" id="account-issuer" class="form-input" placeholder="e.g., Google, GitHub, AWS">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Secret Key *</label>
+                        <input type="text" id="account-secret" class="form-input" placeholder="Base32 encoded secret" required>
+                        <small class="form-hint">Enter the secret key provided by the service</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select id="account-type" class="form-input" onchange="toggleCounterField()">
+                            <option value="totp">TOTP (Time-based)</option>
+                            <option value="hotp">HOTP (Counter-based)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Algorithm</label>
+                        <select id="account-algorithm" class="form-input">
+                            <option value="SHA-1">SHA-1</option>
+                            <option value="SHA-256">SHA-256</option>
+                            <option value="SHA-512">SHA-512</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Digits</label>
+                            <input type="number" id="account-digits" class="form-input" value="6" min="6" max="8">
+                        </div>
+                        <div class="form-group" id="period-group">
+                            <label class="form-label">Period (sec)</label>
+                            <input type="number" id="account-period" class="form-input" value="30" min="15" max="60">
+                        </div>
+                        <div class="form-group" id="counter-group" style="display: none;">
+                            <label class="form-label">Counter</label>
+                            <input type="number" id="account-counter" class="form-input" value="0" min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('add-modal')">Cancel</button>
+                <button type="submit" form="add-form" class="btn btn-primary">Add Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Scanner Modal -->
+    <div id="camera-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'camera-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-camera"></i> Scan QR Code with Camera</h3>
+            </div>
+            <div class="modal-body">
+                <div class="camera-container" id="camera-container" style="display: none;">
+                    <video id="camera-video" class="camera-video" autoplay playsinline></video>
+                    <div class="camera-overlay"></div>
+                    <div class="camera-status">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Point camera at QR code...</span>
+                    </div>
+                </div>
+                <canvas id="camera-canvas" style="display: none;"></canvas>
+                <div id="camera-error" style="display: none; padding: 1rem; background: #fff8c5; border: 1px solid #d4c000; border-radius: 6px; color: #24292f;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="camera-error-text"></span>
+                </div>
+                <div class="camera-controls">
+                    <button type="button" class="btn" id="switch-camera-btn" onclick="switchCamera()" style="display: none;">
+                        <i class="fas fa-sync-alt"></i> Switch Camera
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="stopCamera()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Upload Modal -->
+    <div id="qr-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'qr-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-image"></i> Upload QR Code Image</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: #57606a; margin-bottom: 1rem;">Upload a QR code image to add an account.</p>
+                <form id="qr-form" onsubmit="addAccountFromQR(event)">
+                    <div class="form-group">
+                        <label class="form-label">QR Code Image *</label>
+                        <input type="file" id="qr-file" class="form-input" accept="image/*" required onchange="previewQR(event)">
+                    </div>
+                    <canvas id="qr-canvas" style="display: none;"></canvas>
+                    <img id="qr-preview" class="qr-preview" style="display: none;">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('qr-modal')">Cancel</button>
+                <button type="submit" form="qr-form" class="btn btn-primary">Add Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- URI Modal -->
+    <div id="uri-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'uri-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-link"></i> Add Account by URI</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: #57606a; margin-bottom: 1rem;">Paste the otpauth:// URI to add an account.</p>
+                <form id="uri-form" onsubmit="addAccountFromURI(event)">
+                    <div class="form-group">
+                        <label class="form-label">OTP Auth URI *</label>
+                        <input type="text" id="uri-input" class="form-input" placeholder="otpauth://totp/Example:user@example.com?secret=..." required>
+                        <small class="form-hint">Example: otpauth://totp/GitHub:user@email.com?secret=JBSWY3DPEHPK3PXP&issuer=GitHub</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('uri-modal')">Cancel</button>
+                <button type="submit" form="uri-form" class="btn btn-primary">Add Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'export-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-download"></i> Export Encrypted Backup</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: #57606a; margin-bottom: 1rem;">Your accounts will be encrypted with AES-256 using your password.</p>
+                <form id="export-form" onsubmit="exportAccounts(event)">
+                    <div class="form-group">
+                        <label class="form-label">Encryption Password *</label>
+                        <input type="password" id="export-password" class="form-input" placeholder="Enter a strong password" required minlength="8">
+                        <small class="form-hint">Remember this password - you'll need it to import your backup</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password *</label>
+                        <input type="password" id="export-password-confirm" class="form-input" placeholder="Confirm password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('export-modal')">Cancel</button>
+                <button type="submit" form="export-form" class="btn btn-primary">Export Backup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'import-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-upload"></i> Import Encrypted Backup</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: #57606a; margin-bottom: 1rem;">Select your encrypted backup file and enter the password.</p>
+                <form id="import-form" onsubmit="importAccounts(event)">
+                    <div class="form-group">
+                        <label class="form-label">Backup File *</label>
+                        <input type="file" id="import-file" class="form-input" accept=".json" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Decryption Password *</label>
+                        <input type="password" id="import-password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('import-modal')">Cancel</button>
+                <button type="submit" form="import-form" class="btn btn-primary">Import Backup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal-overlay" onclick="closeOnOverlay(event, 'delete-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: #24292f;">Are you sure you want to delete <strong id="delete-account-name"></strong>?</p>
+                <p style="color: #57606a; font-size: 0.875rem; margin-top: 0.5rem;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('delete-modal')">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        // ============================================
+        // CRYPTOGRAPHIC UTILITIES
+        // ============================================
+
+        function normalizeAlgorithm(algo) {
+            const algoMap = { 'SHA-1': 'SHA-1', 'SHA1': 'SHA-1', 'SHA-256': 'SHA-256', 'SHA256': 'SHA-256', 'SHA-512': 'SHA-512', 'SHA512': 'SHA-512' };
+            return algoMap[algo] || 'SHA-1';
+        }
+
+        function base32Decode(str) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+            str = str.toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
+            let bits = '';
+            for (let char of str) {
+                const val = alphabet.indexOf(char);
+                if (val === -1) throw new Error('Invalid base32 character');
+                bits += val.toString(2).padStart(5, '0');
+            }
+            const bytes = new Uint8Array(Math.floor(bits.length / 8));
+            for (let i = 0; i < bytes.length; i++) {
+                bytes[i] = parseInt(bits.substr(i * 8, 8), 2);
+            }
+            return bytes;
+        }
+
+        async function hmac(algorithm, key, message) {
+            const normalizedAlgo = normalizeAlgorithm(algorithm);
+            const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: normalizedAlgo }, false, ['sign']);
+            const signature = await crypto.subtle.sign('HMAC', cryptoKey, message);
+            return new Uint8Array(signature);
+        }
+
+        async function generateHOTP(secret, counter, digits = 6, algorithm = 'SHA-1') {
+            const secretBytes = base32Decode(secret);
+            const counterBytes = new Uint8Array(8);
+            const view = new DataView(counterBytes.buffer);
+            view.setBigUint64(0, BigInt(counter), false);
+            const hash = await hmac(algorithm, secretBytes, counterBytes);
+            const offset = hash[hash.length - 1] & 0x0f;
+            const truncated = (((hash[offset] & 0x7f) << 24) | ((hash[offset + 1] & 0xff) << 16) | ((hash[offset + 2] & 0xff) << 8) | (hash[offset + 3] & 0xff));
+            return (truncated % Math.pow(10, digits)).toString().padStart(digits, '0');
+        }
+
+        async function generateTOTP(secret, period = 30, digits = 6, algorithm = 'SHA-1') {
+            const counter = Math.floor(Date.now() / 1000 / period);
+            return await generateHOTP(secret, counter, digits, algorithm);
+        }
+
+        async function encryptData(data, password) {
+            const encoder = new TextEncoder();
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits', 'deriveKey']);
+            const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+            const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, encoder.encode(data));
+            return { salt: Array.from(salt), iv: Array.from(iv), data: Array.from(new Uint8Array(encrypted)) };
+        }
+
+        async function decryptData(encryptedObj, password) {
+            const encoder = new TextEncoder();
+            const decoder = new TextDecoder();
+            const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits', 'deriveKey']);
+            const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new Uint8Array(encryptedObj.salt), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(encryptedObj.iv) }, key, new Uint8Array(encryptedObj.data));
+            return decoder.decode(decrypted);
+        }
+
+        // ============================================
+        // QR CODE PROCESSING
+        // ============================================
+
+        function parseOTPAuthURI(uri) {
+            try {
+                const url = new URL(uri);
+                if (url.protocol !== 'otpauth:') throw new Error('Invalid OTP URI');
+                const type = url.hostname;
+                const label = decodeURIComponent(url.pathname.substring(1));
+                const params = new URLSearchParams(url.search);
+                let name = label;
+                let issuer = params.get('issuer') || '';
+                if (label.includes(':')) {
+                    const parts = label.split(':');
+                    issuer = issuer || parts[0];
+                    name = parts[1] || parts[0];
+                }
+                return {
+                    type: type.toLowerCase(),
+                    name: name.trim(),
+                    issuer: issuer.trim(),
+                    secret: params.get('secret') || '',
+                    algorithm: params.get('algorithm') || 'SHA1',
+                    digits: parseInt(params.get('digits') || '6'),
+                    period: parseInt(params.get('period') || '30'),
+                    counter: parseInt(params.get('counter') || '0')
+                };
+            } catch (error) {
+                throw new Error('Failed to parse OTP URI: ' + error.message);
+            }
+        }
+
+        function previewQR(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('qr-preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function addAccountFromQR(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('qr-file');
+            if (!fileInput.files.length) {
+                showNotification('Please select an image', true);
+                return;
+            }
+            try {
+                const file = fileInput.files[0];
+                const imageData = await loadImage(file);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (!code) {
+                    showNotification('No QR code found in image', true);
+                    return;
+                }
+                const accountData = parseOTPAuthURI(code.data);
+                base32Decode(accountData.secret);
+                accountData.algorithm = normalizeAlgorithm(accountData.algorithm);
+                accounts.push(accountData);
+                saveAccounts();
+                hideModal('qr-modal');
+                renderAccounts();
+                showNotification('Account added from QR code successfully');
+            } catch (error) {
+                showNotification('Failed to process QR code: ' + error.message, true);
+            }
+        }
+
+        async function addAccountFromURI(event) {
+            event.preventDefault();
+            const uriInput = document.getElementById('uri-input');
+            const uri = uriInput.value.trim();
+            if (!uri) {
+                showNotification('Please enter a URI', true);
+                return;
+            }
+            try {
+                const accountData = parseOTPAuthURI(uri);
+                base32Decode(accountData.secret);
+                accountData.algorithm = normalizeAlgorithm(accountData.algorithm);
+                accounts.push(accountData);
+                saveAccounts();
+                hideModal('uri-modal');
+                renderAccounts();
+                showNotification('Account added from URI successfully');
+            } catch (error) {
+                showNotification('Failed to parse URI: ' + error.message, true);
+            }
+        }
+
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.getElementById('qr-canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ============================================
+        // CAMERA SCANNER
+        // ============================================
+
+        let cameraStream = null;
+        let cameraAnimationFrame = null;
+        let currentFacingMode = 'environment';
+
+        async function showCameraModal() {
+            showModal('camera-modal');
+            await startCamera();
+        }
+
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.getElementById('camera-video');
+                video.srcObject = cameraStream;
+                
+                document.getElementById('camera-container').style.display = 'block';
+                document.getElementById('camera-error').style.display = 'none';
+
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                if (videoDevices.length > 1) {
+                    document.getElementById('switch-camera-btn').style.display = 'flex';
+                }
+
+                video.addEventListener('loadedmetadata', () => {
+                    scanQRCode();
+                });
+            } catch (error) {
+                console.error('Camera error:', error);
+                document.getElementById('camera-container').style.display = 'none';
+                const errorDiv = document.getElementById('camera-error');
+                errorDiv.style.display = 'block';
+                document.getElementById('camera-error-text').textContent = 'Camera access denied or not available. Please grant camera permissions and try again.';
+            }
+        }
+
+        async function switchCamera() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            stopCamera(false);
+            await startCamera();
+        }
+
+        function scanQRCode() {
+            const video = document.getElementById('camera-video');
+            const canvas = document.getElementById('camera-canvas');
+            const ctx = canvas.getContext('2d');
+
+            function tick() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        try {
+                            const accountData = parseOTPAuthURI(code.data);
+                            base32Decode(accountData.secret);
+                            accountData.algorithm = normalizeAlgorithm(accountData.algorithm);
+                            accounts.push(accountData);
+                            saveAccounts();
+                            stopCamera();
+                            renderAccounts();
+                            showNotification('Account added from camera successfully');
+                            return;
+                        } catch (error) {
+                            console.error('QR parse error:', error);
+                        }
+                    }
+                }
+                cameraAnimationFrame = requestAnimationFrame(tick);
+            }
+            tick();
+        }
+
+        function stopCamera(hideModalFlag = true) {
+            if (cameraAnimationFrame) {
+                cancelAnimationFrame(cameraAnimationFrame);
+                cameraAnimationFrame = null;
+            }
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            const video = document.getElementById('camera-video');
+            video.srcObject = null;
+            document.getElementById('camera-container').style.display = 'none';
+            document.getElementById('switch-camera-btn').style.display = 'none';
+            if (hideModalFlag) {
+                hideModal('camera-modal');
+            }
+        }
+
+        // ============================================
+        // LOCAL STORAGE
+        // ============================================
+
+        function saveAccounts() {
+            try {
+                localStorage.setItem('xsukax_accounts', JSON.stringify(accounts));
+            } catch (error) {
+                console.error('Failed to save accounts:', error);
+            }
+        }
+
+        function loadAccounts() {
+            try {
+                const stored = localStorage.getItem('xsukax_accounts');
+                if (stored) accounts = JSON.parse(stored);
+            } catch (error) {
+                console.error('Failed to load accounts:', error);
+                accounts = [];
+            }
+        }
+
+        // ============================================
+        // APPLICATION STATE
+        // ============================================
+
+        let accounts = [];
+        let deleteTargetIndex = null;
+        let updateInterval = null;
+
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = 'notification ' + (isError ? 'error' : 'success');
+            notification.innerHTML = `<i class="fas fa-${isError ? 'exclamation-circle' : 'check-circle'} notification-icon"></i><span class="notification-text">${message}</span>`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function showModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function hideModal(id) {
+            if (id === 'camera-modal') {
+                stopCamera(false);
+            }
+            document.getElementById(id).classList.remove('show');
+            const modal = document.getElementById(id);
+            const forms = modal.querySelectorAll('form');
+            forms.forEach(form => form.reset());
+            if (id === 'qr-modal') {
+                document.getElementById('qr-preview').style.display = 'none';
+            }
+        }
+
+        function closeOnOverlay(event, modalId) {
+            if (event.target.classList.contains('modal-overlay')) {
+                hideModal(modalId);
+            }
+        }
+
+        function showAddModal() { showModal('add-modal'); }
+        function showQRModal() { showModal('qr-modal'); }
+        function showURIModal() { showModal('uri-modal'); }
+        function showExportModal() {
+            if (accounts.length === 0) {
+                showNotification('No accounts to export', true);
+                return;
+            }
+            showModal('export-modal');
+        }
+        function showImportModal() { showModal('import-modal'); }
+
+        function toggleCounterField() {
+            const type = document.getElementById('account-type').value;
+            document.getElementById('period-group').style.display = type === 'totp' ? 'block' : 'none';
+            document.getElementById('counter-group').style.display = type === 'hotp' ? 'block' : 'none';
+        }
+
+        function addAccount(event) {
+            event.preventDefault();
+            const name = document.getElementById('account-name').value.trim();
+            const issuer = document.getElementById('account-issuer').value.trim();
+            const secret = document.getElementById('account-secret').value.trim().replace(/\s/g, '');
+            const type = document.getElementById('account-type').value;
+            const algorithm = document.getElementById('account-algorithm').value;
+            const digits = parseInt(document.getElementById('account-digits').value);
+            const period = parseInt(document.getElementById('account-period').value);
+            const counter = parseInt(document.getElementById('account-counter').value) || 0;
+            try {
+                base32Decode(secret);
+            } catch (error) {
+                showNotification('Invalid secret key. Must be base32 encoded.', true);
+                return;
+            }
+            const account = { name, issuer, secret, type, algorithm, digits, ...(type === 'totp' ? { period } : { counter }) };
+            accounts.push(account);
+            saveAccounts();
+            hideModal('add-modal');
+            renderAccounts();
+            showNotification('Account added successfully');
+        }
+
+        function deleteAccount(index) {
+            deleteTargetIndex = index;
+            document.getElementById('delete-account-name').textContent = accounts[index].name;
+            showModal('delete-modal');
+        }
+
+        function confirmDelete() {
+            if (deleteTargetIndex !== null) {
+                accounts.splice(deleteTargetIndex, 1);
+                deleteTargetIndex = null;
+                saveAccounts();
+                hideModal('delete-modal');
+                renderAccounts();
+                showNotification('Account deleted');
+            }
+        }
+
+        async function copyCode(code) {
+            try {
+                await navigator.clipboard.writeText(code);
+                showNotification('Code copied to clipboard');
+            } catch (error) {
+                showNotification('Failed to copy code', true);
+            }
+        }
+
+        async function incrementCounter(index) {
+            accounts[index].counter++;
+            saveAccounts();
+            await updateSingleAccount(index);
+        }
+
+        async function updateSingleAccount(index) {
+            const account = accounts[index];
+            const codeElement = document.getElementById(`code-${index}`);
+            if (!codeElement) return;
+            try {
+                let code;
+                if (account.type === 'totp') {
+                    code = await generateTOTP(account.secret, account.period, account.digits, account.algorithm);
+                } else {
+                    code = await generateHOTP(account.secret, account.counter, account.digits, account.algorithm);
+                }
+                codeElement.textContent = code;
+                codeElement.onclick = () => copyCode(code);
+                const copyBtn = document.getElementById(`copy-${index}`);
+                if (copyBtn) copyBtn.onclick = () => copyCode(code);
+            } catch (error) {
+                console.error('Error updating code:', error);
+                codeElement.textContent = 'ERROR';
+            }
+        }
+
+        async function renderAccounts() {
+            const container = document.getElementById('accounts-container');
+            if (accounts.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-key"></i><h3>No accounts added</h3><p>Click "Add Account", "Scan with Camera", or "Upload QR" to get started</p></div>`;
+                if (updateInterval) {
+                    clearInterval(updateInterval);
+                    updateInterval = null;
+                }
+                return;
+            }
+            container.innerHTML = '';
+            for (let i = 0; i < accounts.length; i++) {
+                const account = accounts[i];
+                const card = document.createElement('div');
+                card.className = 'account-card';
+                let code = '------';
+                let progressHtml = '';
+                try {
+                    if (account.type === 'totp') {
+                        code = await generateTOTP(account.secret, account.period, account.digits, account.algorithm);
+                        const now = Date.now() / 1000;
+                        const timeLeft = account.period - (now % account.period);
+                        const progress = (timeLeft / account.period) * 100;
+                        let barClass = '';
+                        if (timeLeft < 5) barClass = 'danger';
+                        else if (timeLeft < 10) barClass = 'warning';
+                        progressHtml = `
+                            <div class="progress-wrapper">
+                                <div class="progress-label">
+                                    <span><i class="fas fa-clock"></i> Time remaining</span>
+                                    <span><strong>${Math.ceil(timeLeft)}s</strong></span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar ${barClass}" id="progress-${i}" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        code = await generateHOTP(account.secret, account.counter, account.digits, account.algorithm);
+                    }
+                } catch (error) {
+                    console.error('Error generating code:', error);
+                    code = 'ERROR';
+                }
+                card.innerHTML = `
+                    <div class="account-header">
+                        <div class="account-name">${account.name}</div>
+                        ${account.issuer ? `<div class="account-issuer">${account.issuer}</div>` : ''}
+                    </div>
+                    <div class="code-section">
+                        <div class="code-display" id="code-${i}" onclick="copyCode('${code}')">${code}</div>
+                        ${progressHtml}
+                    </div>
+                    <div class="account-actions">
+                        <button class="btn" id="copy-${i}" onclick="copyCode('${code}')">
+                            <i class="fas fa-copy"></i> Copy Code
+                        </button>
+                        ${account.type === 'hotp' ? `<button class="btn" onclick="incrementCounter(${i})"><i class="fas fa-forward"></i> Next Code</button>` : ''}
+                        <button class="btn btn-danger" onclick="deleteAccount(${i})">
+                            <i class="fas fa-trash"></i> Delete Account
+                        </button>
+                    </div>
+                    <div class="account-meta">
+                        <span class="badge"><i class="fas fa-clock"></i> ${account.type.toUpperCase()}</span>
+                        <span class="badge"><i class="fas fa-shield-alt"></i> ${account.algorithm}</span>
+                        <span class="badge"><i class="fas fa-hashtag"></i> ${account.digits} digits</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+            if (!updateInterval) {
+                updateInterval = setInterval(updateAllTOTPCodes, 1000);
+            }
+        }
+
+        async function updateAllTOTPCodes() {
+            for (let i = 0; i < accounts.length; i++) {
+                const account = accounts[i];
+                if (account.type === 'totp') {
+                    const now = Date.now() / 1000;
+                    const currentPeriod = Math.floor(now / account.period);
+                    const timeLeft = account.period - (now % account.period);
+                    const progress = (timeLeft / account.period) * 100;
+                    const progressBar = document.getElementById(`progress-${i}`);
+                    if (progressBar) {
+                        progressBar.style.width = progress + '%';
+                        progressBar.classList.remove('warning', 'danger');
+                        if (timeLeft < 5) progressBar.classList.add('danger');
+                        else if (timeLeft < 10) progressBar.classList.add('warning');
+                        const label = progressBar.parentElement.previousElementSibling;
+                        if (label) {
+                            const timeSpan = label.querySelector('span:last-child strong');
+                            if (timeSpan) timeSpan.textContent = Math.ceil(timeLeft) + 's';
+                        }
+                    }
+                    const codeElement = document.getElementById(`code-${i}`);
+                    if (codeElement && !codeElement.dataset.period) {
+                        codeElement.dataset.period = currentPeriod;
+                    } else if (codeElement && parseInt(codeElement.dataset.period) !== currentPeriod) {
+                        codeElement.dataset.period = currentPeriod;
+                        await updateSingleAccount(i);
+                    }
+                }
+            }
+        }
+
+        async function exportAccounts(event) {
+            event.preventDefault();
+            const password = document.getElementById('export-password').value;
+            const confirmPassword = document.getElementById('export-password-confirm').value;
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', true);
+                return;
+            }
+            if (password.length < 8) {
+                showNotification('Password must be at least 8 characters', true);
+                return;
+            }
+            try {
+                const data = JSON.stringify(accounts);
+                const encrypted = await encryptData(data, password);
+                const exportData = { version: 1, app: 'xsukax-authenticator', timestamp: new Date().toISOString(), encrypted };
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `xsukax-backup-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                hideModal('export-modal');
+                showNotification('Backup exported successfully');
+            } catch (error) {
+                showNotification('Export failed: ' + error.message, true);
+            }
+        }
+
+        async function importAccounts(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('import-file');
+            const password = document.getElementById('import-password').value;
+            if (!fileInput.files.length) {
+                showNotification('Please select a file', true);
+                return;
+            }
+            try {
+                const file = fileInput.files[0];
+                const text = await file.text();
+                const importData = JSON.parse(text);
+                if (!importData.encrypted) {
+                    showNotification('Invalid backup file format', true);
+                    return;
+                }
+                const decrypted = await decryptData(importData.encrypted, password);
+                const importedAccounts = JSON.parse(decrypted);
+                if (!Array.isArray(importedAccounts)) {
+                    showNotification('Invalid backup data', true);
+                    return;
+                }
+                accounts = importedAccounts;
+                saveAccounts();
+                hideModal('import-modal');
+                renderAccounts();
+                showNotification(`Successfully imported ${accounts.length} account(s)`);
+            } catch (error) {
+                if (error.name === 'OperationError') {
+                    showNotification('Incorrect password', true);
+                } else {
+                    showNotification('Import failed: ' + error.message, true);
+                }
+            }
+        }
+
+        // Initialize
+        loadAccounts();
+        renderAccounts();
+    </script>
+</body>
+</html>
